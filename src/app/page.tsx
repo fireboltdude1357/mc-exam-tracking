@@ -424,7 +424,7 @@ export default function Home() {
         </div>
 
         {/* Statistics Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
+        <div className="sticky top-4 z-10 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-lg p-6 mb-8">
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
             Statistics
           </h2>
@@ -485,9 +485,25 @@ export default function Home() {
 
         {/* Questions Grid */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
-            Questions
-          </h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+              Questions
+            </h2>
+            <button
+              onClick={() => {
+                if (revealedAnswers.size === questions.length) {
+                  setRevealedAnswers(new Set());
+                } else {
+                  setRevealedAnswers(new Set(questions.map((q) => q.id)));
+                }
+              }}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
+            >
+              {revealedAnswers.size === questions.length
+                ? "Hide All Answers"
+                : "Reveal All Answers"}
+            </button>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {questions.map((question) => {
               const isCorrect =
