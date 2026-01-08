@@ -333,6 +333,23 @@ export default function Home() {
     return initializeQuestions();
   });
 
+  // Track which correct answers are revealed
+  const [revealedAnswers, setRevealedAnswers] = useState<Set<number>>(
+    new Set()
+  );
+
+  const toggleAnswerReveal = (questionId: number) => {
+    setRevealedAnswers((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(questionId)) {
+        newSet.delete(questionId);
+      } else {
+        newSet.add(questionId);
+      }
+      return newSet;
+    });
+  };
+
   // Save to localStorage whenever questions change
   useEffect(() => {
     localStorage.setItem("exam-tracker-data", JSON.stringify(questions));
@@ -378,12 +395,32 @@ export default function Home() {
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-            Exam Grade Tracker
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            Track your practice exam progress - 100 Questions
-          </p>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+                Exam Grade Tracker
+              </h1>
+              <p className="text-gray-600 dark:text-gray-300">
+                Track your practice exam progress - 100 Questions
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  if (revealedAnswers.size === questions.length) {
+                    setRevealedAnswers(new Set());
+                  } else {
+                    setRevealedAnswers(new Set(questions.map((q) => q.id)));
+                  }
+                }}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm"
+              >
+                {revealedAnswers.size === questions.length
+                  ? "Hide All Answers"
+                  : "Reveal All Answers"}
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Statistics Card */}
@@ -517,27 +554,48 @@ export default function Home() {
                     <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Correct Answer
                     </label>
-                    <div className="flex gap-1">
-                      {(["A", "B", "C", "D", "E"] as const).map((option) => (
-                        <button
-                          key={option}
-                          onClick={() =>
-                            updateQuestion(
-                              question.id,
-                              "correctAnswer",
-                              question.correctAnswer === option ? null : option
+                    {revealedAnswers.has(question.id) ? (
+                      <div className="space-y-2">
+                        <div className="flex gap-1">
+                          {(["A", "B", "C", "D", "E"] as const).map(
+                            (option) => (
+                              <button
+                                key={option}
+                                onClick={() =>
+                                  updateQuestion(
+                                    question.id,
+                                    "correctAnswer",
+                                    question.correctAnswer === option
+                                      ? null
+                                      : option
+                                  )
+                                }
+                                className={`flex-1 py-2 px-2 text-sm font-medium rounded transition-colors ${
+                                  question.correctAnswer === option
+                                    ? "bg-green-600 text-white"
+                                    : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+                                }`}
+                              >
+                                {option}
+                              </button>
                             )
-                          }
-                          className={`flex-1 py-2 px-2 text-sm font-medium rounded transition-colors ${
-                            question.correctAnswer === option
-                              ? "bg-green-600 text-white"
-                              : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
-                          }`}
+                          )}
+                        </div>
+                        <button
+                          onClick={() => toggleAnswerReveal(question.id)}
+                          className="w-full py-1.5 px-2 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
                         >
-                          {option}
+                          Hide Answer
                         </button>
-                      ))}
-                    </div>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => toggleAnswerReveal(question.id)}
+                        className="w-full py-2 px-2 text-sm font-medium rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                      >
+                        Click to Reveal Answer
+                      </button>
+                    )}
                   </div>
 
                   {/* Status Indicator */}
